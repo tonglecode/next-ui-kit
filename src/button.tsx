@@ -1,6 +1,5 @@
-import React, { ReactNode } from "react";
+import React from "react";
 
-//프랍에 직관적으로 사용하기 위한 const 타입으로 설정
 export const roundedEnum = {
   sm: "2px",
   md: "4px",
@@ -15,40 +14,61 @@ export const colorSet = {
   light: "#20dbd8",
 } as const;
 
-// 기존에 생성한 객체를 타입으로 그대로 적용
-type RoundedEnum = typeof roundedEnum;
-type ColorSet = typeof colorSet;
+export type RoundedEnum = typeof roundedEnum;
+export type ColorSet = typeof colorSet;
 
-interface Props {
-  children: ReactNode;
+export type BgColorProp = keyof ColorSet | (string & {});
+export type RoundedProp = keyof RoundedEnum | (string & {});
+
+export interface ButtonProps {
+  children: React.ReactNode;
   paddingX?: string;
   paddingY?: string;
-  bgColor?: keyof ColorSet | string; //키값만 허용한다.
+  bgColor?: BgColorProp;
   bgOpacity?: string;
-  rounded?: keyof RoundedEnum;
+  rounded?: RoundedProp;
+  onClick?: () => void; // onClick 이벤트 핸들러 추가
 }
 
-const Button: React.FC<Props> = ({
+const Button: React.FC<ButtonProps> = ({
   children,
   paddingX,
   paddingY,
   bgColor,
   bgOpacity,
   rounded,
+  onClick,
 }) => {
+  const getBackgroundColor = (color: BgColorProp): string => {
+    return color in colorSet ? colorSet[color as keyof ColorSet] : color;
+  };
+
+  const getBorderRadius = (radius: RoundedProp): string => {
+    return radius in roundedEnum
+      ? roundedEnum[radius as keyof RoundedEnum]
+      : radius;
+  };
+
   return (
-    <div
+    <button
+      onClick={onClick}
       style={{
         display: "inline-block",
-        backgroundColor: bgColor && colorSet[bgColor as keyof ColorSet],
+        backgroundColor: bgColor ? getBackgroundColor(bgColor) : undefined,
         opacity: bgOpacity,
         paddingInline: paddingX,
         paddingBlock: paddingY,
-        borderRadius: rounded && roundedEnum[rounded],
+        borderRadius: rounded ? getBorderRadius(rounded) : undefined,
+        border: "none",
+        cursor: "pointer",
+        fontFamily: "inherit",
+        fontSize: "inherit",
+        color: "white", // 텍스트 색상 설정
+        transition: "background-color 0.3s, opacity 0.3s", // 부드러운 전환 효과
       }}
     >
       {children}
-    </div>
+    </button>
   );
 };
 
